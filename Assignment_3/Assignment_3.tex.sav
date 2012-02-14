@@ -1,0 +1,78 @@
+\documentclass[12pt]{article}
+%\documentclass{article}
+
+\usepackage{times}
+\usepackage[final]{graphicx}
+\usepackage{hyperref}
+
+\setlength{\topmargin}{-0.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\textwidth}{6.5in}
+\setlength{\textheight}{9.0in}
+
+\begin{document}
+
+\centerline{\bf \Large CS295/CS395/CSYS395: \href{CS295_395_Syllabus.pdf}{\underline{Evolutionary Robotics}}}
+
+\vspace{0.5cm}
+
+\centerline{\bf \large Programming Assignment 3 of 10}
+
+\vspace{0.5cm}
+
+\centerline{\large Assigned: Friday, September 17, 2010}
+
+\vspace{0.5cm}
+
+\centerline{\large Due: Friday, September 24, 2010 by midnight}
+
+\vspace{0.5cm}
+
+\noindent \textbf{Description:} In this assignment you will apply the hillclimber you developed in assignment 1 to the artificial neural networks (ANNs) you developed in assignment 2: The altered hillclimber will evolve the neural networks such that they produce some desirable pattern over time. The genotype will be a matrix that stores synaptic weights (just like the matrix \textbf{\texttt{synapses}} from assignment 2), and the phenotype will be a matrix that shows the values of the neurons over time (just like the matrix \textbf{\texttt{neuronValues}} from assignment 2).
+
+\begin{enumerate}
+
+\item \textbf{Back up your Python code from assignment 2.} Encapsulate your code from assignment 2 in a single file, Assignment\_2.py, such that when you run it you can reproduce all of the visualizations from that assignment. This will prove to you that that code is working fine, as you will use it in this and subsequent assignments.
+
+\item Create a blank Python file called Assignment\_3.py. As you implement this assignment, copy and paste functions from assignments 1 and 2 as they are needed.
+
+\item Copy and paste the main function that you created in assignment 1 at step x, comment out all but the first two lines and change it so that instead of creating a vector of random numbers, you create a matrix of random numbers. Note that in Python, putting a hash symbol (\#) at the front of the line comments it out:
+    
+\textbf{\texttt{parent = MatrixCreate(1,50)}}\\
+\# \textbf{\texttt{parent = MatrixRandomize(parent)}}\\
+\textbf{\texttt{parentFitness = FitnessParent(parent)}}\\
+\textbf{\texttt{for currentGeneration in range(0,5000):}}\\
+\indent \textbf{\texttt{\hspace{1cm}print currentGeneration, parentFitness}}\\
+\indent \textbf{\texttt{\hspace{1cm}child = MatrixPerturb(parent,0.05)}}\\
+\indent \textbf{\texttt{\hspace{1cm}childFitness = Fitness(child)}}\\
+\indent \textbf{\texttt{\hspace{1cm}if ( childFitness > parentFitness ):}}\\
+\indent \textbf{\texttt{\hspace{2cm}parent = child}}\\
+\indent \textbf{\texttt{\hspace{2cm}parentFitness = childFitness}}\\
+    
+    
+\end{enumerate}
+
+\begin{figure}[!t]
+\centerline{
+a\includegraphics[width=0.32\textwidth]{Fig1a.eps}
+b\includegraphics[width=0.32\textwidth]{Fig1b.eps}
+c\includegraphics[width=0.32\textwidth]{Fig1c.eps}
+}
+\centerline{
+d\includegraphics[width=0.32\textwidth]{Fig1d.eps}
+e\includegraphics[width=0.32\textwidth]{Fig1e.eps}
+f\includegraphics[width=0.32\textwidth]{Fig1f.eps}
+}
+\caption{Visualizations demonstrating the successful evolution of artificial neural networks.
+a: Behavior of an initial, random ANN.
+b: Behavior of an ANN evolved such that the neuron values, on the last update (bottom row), show alternating patterns ($n_1$=0,$n_2$=1,$n_3$=0,...).
+c: The fitness change of the best ANN over evolutionary time.
+d: Behavior of an initial, random ANN from another evolutionary run.
+e: Behavior of an ANN evolved such that neighboring neurons exhibit different values, and those values change from one time step to the next.
+f: The fitness change of the best ANN over evolutionary time using this second fitness function.
+}
+\label{Fig}
+\end{figure}
+
+\end{document} 
