@@ -64,7 +64,7 @@ These steps are to be realized as follows.
 \item The Python code should then periodically check for the existence of the second file, which will report the fitness of the parent matrix. You can implement this using the \texttt{path.os.exists} and \texttt{sleep} Python functions: \\
    \texttt{fileName = 'fit.dat';}\\
    \texttt{while ( os.path.exists(fileName)==False ):}\\
-.\hspace{0.5cm}\texttt{\hspace{0.5cm}sleep(0.2);}\\
+.\hspace{0.5cm}\texttt{\hspace{0.5cm}time.sleep(0.2);}\\
 
  \item Once this part of the Python code is working, set it aside. In the ODE simulation, create a new variable \texttt{timer} that is set to zero, and incremented during each pass through \texttt{simLoop} when it is unpaused.
 

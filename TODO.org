@@ -1,0 +1,47 @@
+* Assignment 2
+** TODO The NN does not have any offset
+   Most NN's have a bias term.  These ones do not. Perhaps it should
+   just be noted.
+
+* Assignment 3
+** DONE Part 13
+   We want to select for odd-numbered neurons being on, and
+   even-numbered neurons being off.  Then we constructed
+   desiredNeuronValues where the opposite is the case.  This works
+   because we're maximizing the error between our desired and actual
+   neural states.  
+
+   I suggest changing this into a minimization problem, so the names
+   desired and actual fit with the example.  OR change the fitness
+   function from MSE to 1/MSE.
+** DONE Part 15
+   Function is called MeanSquaredError but states that it returns the
+   Euclidean distance.  This seems like a misnomer.  Figure 1c seems
+   to show the MSE which is the Euclidean distance squared divided by
+   10.
+** DONE Party 16
+   "parentFitness should increase toward 1" Why would the Euclidean
+   distance between the actual and desired values increase to 1 or be
+   bounded by 1?  The way this is setup, we are maximizing the error
+   between our desired and actual.  Our maximum error is 10 for
+   vectors of 10 elements that are [0, 1] bounded.
+
+** DONE Figure 1
+
+   Discrepancy with Figure 1 c, which shows this error increasing over
+   evolutionary time to 1.  However, no normalization is mentioned, save
+* Assignment 5
+** DONE Figure 1
+   Axes do not obey the right hand rule: x cross y = z instead x cross
+   y = -z.  And the position and size do not appear to be consistent.
+* Assignment 6
+** DONE Part 15
+   Sets the same parameter twice.  I believe it should be dParamLoStop
+   and dParamHiStop that are set.
+* Assignment 10
+** DONE Part 6
+   sleep(0.2) should be time.sleep(0.2)
+
+** TODO Part 10
+   Consider changing function name from WeightsRead() to
+   ReadWeights().  The rest of the functions follow a VerbNoun() form.

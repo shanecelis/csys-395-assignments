@@ -92,10 +92,10 @@ Here are the steps to implement the program.
 \item Create a vector that stores the desired values for the neurons. Let's select for odd-numbered neurons that are on, and even-numbered neurons that are off:
 
 \textbf{\texttt{desiredNeuronValues = VectorCreate(10)}}\\
-\textbf{\texttt{for j in range(0,10,2):}}\\
+\textbf{\texttt{for j in range(1,9,2):}}\\
 \indent \textbf{\texttt{\hspace{1cm}desiredNeuronValues[j]=1}}\\
 
-\item \textbf{\texttt{VectorCreate}} returns a row vector of length 10. To create this function, copy, rename and modify \textbf{\texttt{MatrixCreate}}. To create a vector using NumPy: \textbf{\texttt{v = zeros((width),}} \textbf{\texttt{dtype='f')}}. The for loop counts from 0 to 9 in steps of 2: 0,2,4,... This code should produce a vector of the form [1,0,1,0,1,0,1,0,1,0].
+\item \textbf{\texttt{VectorCreate}} returns a row vector of length 10. To create this function, copy, rename and modify \textbf{\texttt{MatrixCreate}}. To create a vector using NumPy: \textbf{\texttt{v = zeros((width),}} \textbf{\texttt{dtype='f')}}. The for loop counts from 1 to 9 in steps of 2: 1,3,5,... This code should produce a vector of the form [0,1,0,1,0,1,0,1,0,1].
 
 \item Now, create a function \textbf{\texttt{MeanDistance(v1,v2)}} that returns the normalized distance between two vectors with elements between 0 and 1: The function should return 0 if the vectors are the same, and 1 if they are maximally different. This function should be used to compute the distance $d$ between \textbf{\texttt{actualNeuronValues}} and \textbf{\texttt{desiredNeuronValues}}. \textbf{\texttt{Fitness}} should then return $f=1-d$: the lower the distance between the vectors, the closer the fitness approaches 1.
 
