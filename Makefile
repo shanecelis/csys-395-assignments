@@ -10,3 +10,8 @@ clean:
 		$(MAKE) -C $$dir clean; \
 	done
 
+show:
+	for dir in $(SUBDIRS); do \
+		$(MAKE) -C $$dir show; \
+	done
+
