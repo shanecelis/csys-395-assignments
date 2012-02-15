@@ -9,4 +9,4 @@ assignments are written to work with the Open Dyanmics Physics Engine
 The text file `TODO.org` lists the changes both suggested and completed.
 
 * * *
-<small>Written by Shane Celis on 2012-02-15.</small> 
+<small>README.md written by Shane Celis on 2012-02-15.</small> 
