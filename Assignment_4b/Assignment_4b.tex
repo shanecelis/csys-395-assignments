@@ -5,7 +5,7 @@
 \usepackage[final]{graphicx}
 \usepackage{hyperref}
 \usepackage{verbatim}
-
+\usepackage{color}
 \setlength{\topmargin}{-0.5in}
 \setlength{\oddsidemargin}{0in}
 \setlength{\evensidemargin}{0in}
@@ -20,6 +20,8 @@
 
 \centerline{\bf \large Programming Assignment 4 of 10}
 
+\vspace{0.25cm} \centerline{\color{red}DRAFT: Port from ODE to Bullet by Shane Celis \color{black}}
+
 \vspace{0.5cm}
 
 \centerline{\large Assigned: Friday, September 23, 2011}
@@ -30,7 +32,7 @@
 
 \vspace{0.5cm}
 
-\noindent \textbf{Description:} In this assignment you will download, install and make some changes to the Bullet Physics Library, the open source physics engine we will be using for the remainder of this class. After installation and compilation, you will run a test application that comes with Bullet which simulates a vehicle (Fig. \ref{Fig}a). You will then change the radii of the wheels in the Bullet code, re-compile and re-run the code to produce Fig. \ref{Fig}b. You will then comment out all the Bullet code that creates, simulates and draws the objects and joints in this example program, producing the `empty world' shown in Fig. \ref{Fig}c. This will provide you with a blank canvas on which you will begin to build your robot in the next assignment. \\
+\noindent \textbf{Description:} In this assignment you will download, install and make some changes to the Bullet Physics Library, the open source physics engine we will be using for the remainder of this class. After installation and compilation, you will run a test application that comes with Bullet which simulates ragdolls (Fig. \ref{Fig}a). You will then change the radius and length of the head capsule in the Bullet code, re-compile and re-run the code to produce Fig. \ref{Fig}b. You will then turn off the physics simulation while still creating the objects and drawing them as shwon in Fig. \ref{Fig}c. You will then comment out the code that creates the ragdolls in this example program, producing the `empty world' shown in Fig. \ref{Fig}d. This will provide you with a blank canvas on which you will begin to build your robot in the next assignment. \\
 
 \noindent \textbf{Important:} If you get stuck installing Bullet, get on the Bullet forum and ask your question; you will usually get a response in a couple of hours. \textbf{This means of course that you will have to start the assignment before the night before.} If you are still stuck, come see the instructor or teaching assistant.
 
@@ -45,7 +47,7 @@
 
 \item \textbf{If you are working on a Mac or on Linux}, follow the installation instructions found in INSTALL. Once installed, skip to step~\ref{post-install}.
 
-\item Skipping windows specific installation steps for the moment.
+\item \color{red}Skipping windows specific installation steps for the moment.\color{black}
 \begin{comment}
 
 \item \textbf{If you are working on Windows}, installing Bullet is a bit trickier. Download and install the free C++ compiler
@@ -79,7 +81,7 @@
 
 \end{comment}
 \item \label{post-install} For windows users you should now find executables of the demo
-  programs in \\ \texttt{ode-0.11.1/lib/debugdoubledll}. For Linux and
+  programs in \\ \texttt{bullet-2.79/src/.libs/libBulletDynamics.dll}. For Linux and
   Mac users, you should find the executables in
   \texttt{bullet-2.79/Demos/RagdollDemo}. Run the RagdollDemo
   executable.
@@ -119,9 +121,13 @@
     Bullet demo applications}
 \end{table}
 
-\item Open the code for RagdollDemo, and find the line that specifies the radii of the capsule that represents the head. Multiply those radii by four to produce ragdolls that look like bobble-head toys, recompile, and re-run the demo. Screencapture the simulation window  (which should look like Fig. \ref{Fig}b) and paste the result into your document.
+\item Open the code for RagdollDemo, and find the line that specifies the radius and length of the capsule that represents the head. Multiply the radius by four and the length by four to produce ragdolls that look like bobble-head toys, recompile, and re-run the demo. Screencapture the simulation window  (which should look like Fig. \ref{Fig}b) and paste the result into your document.
 
-\item \label{turn-off-sim} Now you will allow the application to create data structures and draw objects, but not run the physics simulation.  Comment out this line of code in RagdollDemo.cpp in RagdollDemo::clientMoveAndDisplay(): \\
+\item \color{red}This bit looks a little bit forced.  We comment it out then put it back. Is it worth it?\color{black}\ Now you will allow the application to create data structures, but not start the physics simulation or drawing window.  Comment out this line of code in main.cpp: \\
+\texttt{ return glutmain(argc,argv,640,480,\\"Bullet Physics Demo. http://bulletphysics.com",\&demoApp);} \\
+Re-compile and re-run.  The application should start then exit immediately. Uncomment the line.  Re-compile and re-run to ensure the drawing window and physics simulator are working again. This line starts the application loop and specifies the size of the window and its title.  
+
+\item \label{turn-off-sim} Now you will allow the application to create data structures and draw objects, but not run the physics simulation.  Comment out this line of code in RagdollDemo.cpp in the clientMoveAndDisplay() method: \\
 \texttt{ m\_dynamicsWorld->stepSimulation(ms / 1000000.f);} \\
 Re-compile and re-run to ensure the program still starts and ends without crashing.  Note: the ragdolls should not fall as they did before and clicking on them does not cause them to move.
 
@@ -131,9 +137,7 @@ Re-compile and re-run.  Only one ragdoll should be shown and the physics simulat
 
 \item Re-enable the physics simulation by uncommenting the stepSimulation function call we did in Step~\ref{turn-off-sim}, so that that the ragdoll falls to the ground when RagdollDemo is executed.
 
-\item Now you will allow an `empty' simulation to run.  Comment out the other call to spawnRagdoll() in initPhysics().  Confirm that no ragdolls are shown.  Re-compile, re-run and ensure that the program still starts and ends without crashing.
-
-\item Recompile, re-run, and you should get an empty simulation as shown in Fig. \ref{Fig}c. Screencapture the window and copy it into your document.
+\item Now you will allow an `empty' simulation to run.  Comment out the other call to spawnRagdoll() in initPhysics().  Confirm that no ragdolls are shown.  Recompile, re-run, and you should get an empty simulation as shown in Fig. \ref{Fig}c. Screencapture the window and copy it into your document.
 
 \item Submit your document (containing four images) in .pdf format to the Teaching Assistant.
 
@@ -150,7 +154,7 @@ d\includegraphics[width=0.48\textwidth]{Fig1d}
 }
 \caption{
 Successful compilation and execution of the RagdollDemo program should produce \textbf{a}.
-Changing the radii of the ragdoll's head should produce \textbf{b}.
+Changing the radius and length of the ragdoll's head should produce \textbf{b}.
 Commenting out the simulation step and one ragdoll should produce \textbf{c}. 
 Re-enabling the simulation and removing the final ragdoll should produce \textbf{d}.}
 \label{Fig}
