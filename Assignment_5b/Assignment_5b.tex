@@ -92,6 +92,7 @@ and add the following variables:
 \texttt{  ...}\\
 \texttt{  geom[index] = ...}\\
 \texttt{  ...}\\
+\texttt{  m\_dynamicsWorld->addRigidBody(body[index]);}\\
 \texttt{\}} \\
 which will be used to create the main body of the robot. Refer to the commented-out code to figure out how to create an object. Assume the mass of all objects for now is 1. Without calling the function, recompile and run until you have no errors.
 
@@ -112,13 +113,13 @@ which can be used to remove objects from the simulation. This function should de
 \end{verbatim}
 Compile and run until error-free.  You should see the box fall and come to rest on the ground as in Fig. \ref{Fig2}a. (You can toggle texture drawing by hitting the 'u' key.) Screencapture this image and paste into your document.
 
-\item Create box will allocate memory for the body and geom objects.  As it is, our simulation will run, but it will leak memory.  If you reset the simulation enough times by hitting the space bar, it will eventually run out of memory.  So we need to delete the objects.  In \verb|RagdollDemo|'s deconstructor method \small{$\sim$}\verb|RagdollDemo| delete the object. 
+\item Create box will allocate memory for the body and geom objects.  As it is, our simulation will run, but it will leak memory.  If you reset the simulation enough times by hitting the space bar, it will eventually run out of memory.  So we need to delete the objects.  In \verb|RagdollDemo|'s \verb|exitPhysics| method, delete the object at the beginning of the method. 
 \begin{verbatim}
-  virtual ~RagdollDemo()
-  {
+void	RagdollDemo::exitPhysics()
+{
     DeleteObject(0);
-    exitPhysics();
-  }
+
+...
 \end{verbatim}
 
 \item We're going to add the ability to pause the simulation.  Modify the call to \verb|stepSimulation| to look like the following.
