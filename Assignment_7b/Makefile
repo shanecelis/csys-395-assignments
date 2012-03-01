@@ -2537,7 +2537,7 @@ endif
 .PHONY: show
 show: all
 	$(QUIET)for x in $(default_pdf_targets); do \
-		[ -e "$$x" ] && $(VIEW_PDF) $$x & \
+		[ -e "$$x" ] && $(VIEW_PDF) $$x; \
 	done
 
 #

@@ -64,7 +64,7 @@ and add the following variables
 \item Write a function in \verb|RagdollDemo.h| with this signature:
   \\\verb|btVector3 PointWorldToLocal(int bodyIndex, btVector3 point)|.
   Look up documentation on the method \verb|getCenterOfMassTransform|
-  and the class \verb|btTransform|.  Test that it works by printing
+  and the class \verb|btTransform| (\href{http://bulletphysics.com/Bullet/BulletFull/classbtTransform.html}{API ref}).  Test that it works by printing
   out the local coordinate of the box's center of mass:
   \\\verb|PointWorldToLocal(0, btVector3(0.,1.,0.))|.  The result
   should be (0,0,0).
