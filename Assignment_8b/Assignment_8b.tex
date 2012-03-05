@@ -1,9 +1,11 @@
 \documentclass[12pt]{article}
-%\documentclass{article}
 
 \usepackage{times}
 \usepackage[final]{graphicx}
 \usepackage{hyperref}
+\usepackage{verbatim}
+\usepackage{enumerate}
+\usepackage{color}
 
 \setlength{\topmargin}{-0.5in}
 \setlength{\oddsidemargin}{0in}
@@ -17,8 +19,8 @@
 
 \vspace{0.5cm}
 
-\centerline{\bf \large Programming Assignment 8 of 10}
-
+\centerline{\bf \large Programming Assignment 8b of 10}
+\vspace{0.25cm} \centerline{\color{red}DRAFT: Port from ODE to Bullet by Shane Celis \color{black}}
 \vspace{0.5cm}
 
 \centerline{\large Assigned: Friday, October 21, 2011}
@@ -29,27 +31,21 @@
 
 \vspace{0.5cm}
 
+\noindent \color{red}CHANGES: Rather than changing the way a body part is colored, I have the student draw another shape because that was easier to do with this codebase.  The contact handling function requires a little massaging to get right for C++ in Step 10.  I've taken the approach of if a step is about C++ proper, give the student an explicit step by step approach.  \color{black}
+
 \noindent \textbf{Description:} In this week's assignment you will add sensors to your robot. You will add one binary touch sensor in each of the four lower legs: the sensor will fire when that leg is touching the ground, and will not fire when the leg is off the ground. Adding touch sensors requires four basic steps:
 
 \begin{enumerate}
 
 \item Set all touch sensor values to zero at the outset of each time step of the simulation.
 
-\item Add code so that, when nearCallback is called because there is a collision between a leg and the ground plane, ODE knows which leg collided.
+\item Add code so that, when nearCallback is called because there is a collision between a leg and the ground plane, Bullet knows which leg collided.
 
 \item Set the touch for that leg to 1.
 
-\item For those legs touching the ground, paint them black; those that do not touch the ground, paint white (see Fig. \ref{Fig1}).
+\item For those legs touching the ground, draw a red sphere at the contact point  (see Fig. \ref{Fig2}).
 \end{enumerate}
 
-\begin{figure}
-\centerline{
-a\includegraphics[height=5cm]{Quad1}
-b\includegraphics[height=5cm]{Quad2}
-c\includegraphics[height=5cm]{Quad3}}
-\caption{Visual display of the touch sensors firing.}
-\label{Fig1}
-\end{figure}
 
 The following instructions will realize these four steps.
 
@@ -57,63 +53,141 @@ The following instructions will realize these four steps.
 
 \item Back up Assignment\_7 on a flash drive or another computer so that you can always return to your completed seventh assignment.
 
-\item Copy directory Assignment\_7, which contains your submitted document and the entire ODE folder. Rename the new directory Assignment\_8.
+\item Copy directory Assignment\_7, which contains your submitted document and the entire Bullet folder. Rename the new directory Assignment\_8.
 
-\item ODE allows the user to associate a pointer with each ODE body using \\ \texttt{dBodySetData(dBodyID,void *data)}. You will create such a data structure, and store the ID of each ODE body there. That is, the third ODE object will have an ID of 3. At the top of the program, create an array of integers \texttt{int IDs[9]}.
+\item Bullet allows the user to associate a pointer with each Bullet body using the method \\ \texttt{setUserPointer(void *data)}. You will create such a data structure, and store the ID of each Bullet body there. That is, the third Bullet object will have an ID of 3. In \verb|RagdollDemo.h| below the \verb|oneStep| declaration, create an array of integers \texttt{int IDs[10]} (9 for the body parts, and 1 for the ground).
 
 \item Just after the array is created, set the $i$th element of the array to $i$.
 
-\item In \texttt{CreateBox(...)} and \texttt{CreateCylinder(...)}, after the ODE body has been created, associate a pointer to the correct element in this array with the object: \\
-    \texttt{dBodySetData(body[index],\&IDs[index]);}
+\item In \texttt{CreateBox(...)} and \texttt{CreateCylinder(...)}, after the Bullet body has been created, associate a pointer to the correct element in this array with the object: \\
+    \texttt{body[index]->setUserPointer(\&IDs[index]);}\\
+Also, associate the ground collision object \verb|fixedGround| with an ID of 9.  
 
-\item Now, when \texttt{nearCallback} is called, you can determine which object is in contact with the ground plane. After these lines in \texttt{nearCallback} \\
-    \texttt{int g1 = (o1 == ground );} \\
-    \texttt{int g2 = (o2 == ground );} \\
-    \texttt{if (!(g1 \^ g2)) return;}, \\
-    one (but not both) of the objects is an ODE body, and the other is the ground plane.
-    Within the code clause that is executed if a collision has actually occurred---that is, after \\
-    \texttt{n = dCollide (o1,o2,N,\&contact[0].geom,sizeof(dContact));}\\
-    \texttt{if (n > 0) \{}\\
-    Add some code to check which object is the ground plane, and then get the user data from the \textit{other} object. For example if o1 is the ground plane, then o2 is an ODE body. You can get the ID of o2 using \\
-    \texttt{int *IDPointer;}\\
-    \texttt{...}\\
-    \texttt{IDPointer = (int*)dBodyGetData(dGeomGetBody(o2));}\\
-    If o2 is the ground plane, then you need to get the ID of o1.
+\item Now, we need to setup a means of determining which objects are in contact with the ground.  There is more than one way of doing this with Bullet.  But we will do this by setting up a callback function that is called after every contact point has been processed.  Add the following function to \verb|RagdollDemo.cpp| before the \verb|initPhysics| method.
 
-\item Once you have this ID, print it to the output terminal:\\
-    \texttt{printf("\%d $\backslash$n",*IDPointer);}. You should get something like the following when the simulation is running unpaused:\\
-    \texttt{5}\\
-    \texttt{7}\\
-    \texttt{...}\\
-    \texttt{6}\\
-    If the robot is moving randomly (Fig. \ref{Fig1}), only the four lower legs (with IDs 5,6,7 and 8) will come into contact with the ground plane.
+\begin{verbatim}
+bool myContactProcessedCallback(btManifoldPoint& cp,
+                                void* body0, void* body1)
+{
+  int *ID1, *ID2;
+  btCollisionObject* o1 = static_cast<btCollisionObject*>(body0);
+  btCollisionObject* o2 = static_cast<btCollisionObject*>(body1);
+  int groundID = 9;
 
-\item Now, at the top of the program, create a new integer array that will store the values of the four touch sensors:\\
-    \texttt{int touches[9];} \\
-    \texttt{touches[i]} will be set to 1 when the touch sensor in the $i$th body part is firing, and zero otherwise. Only \texttt{touches[5]} through \texttt{touches[8]} will be used, because the first five body parts do not have touch sensors.
+  ID1 = static_cast<int*>(o1->getUserPointer());
+  ID2 = static_cast<int*>(o2->getUserPointer());
 
-\newpage
+  /* Your code will go here. See the next step.  */
 
-\item Calls to \texttt{simLoop} and \texttt{nearCallback} alternate: After one pass through \texttt{simLoop} completes, all of the \texttt{nearCallback} calls are made. Once they are complete, a new pass through \texttt{simLoop} is made, and so on. So, we need to set all of the touch sensors to zero at the end of \texttt{simLoop}, and then set all of the touch sensors that are firing to one during the \texttt{nearCallback} calls. Thus, when \texttt{simLoop} begins, all elements in \texttt{touches} are set correctly. First, back in \texttt{nearCallback}, after the print statement you can set the corresponding touch sensor as follows:\\
-    \texttt{printf("\%d $\backslash$n",*IDPointer);}\\
-    \texttt{touches[*IDPointer] = 1;}
+  return false;
+}
+\end{verbatim}  
 
-\item Now, at the very end of \texttt{simLoop}, add a \texttt{for} loop that sets each element of \texttt{touches} to zero.
+You've defined this function, but Bullet does not know about it yet.  So, add this as the first line to the \verb|initPhysics| method: \\\verb|gContactProcessedCallback = myContactProcessedCallback;|
+
+Recompile and run until there are no errors.  You won't see any difference yet.
+
+\begin{figure}
+\centerline{
+a\includegraphics[height=5cm]{Fig2a}
+b\includegraphics[height=5cm]{Fig2b}
+c\includegraphics[height=5cm]{Fig2c}}
+\caption{Visual display of the touch sensors firing: a) no sensors; b) all sensors; and c) one sensor.}
+\label{Fig2} % Mislabeled.
+\end{figure}
+
+\begin{figure}
+\centerline{
+\includegraphics[height=5cm]{Fig1}}
+\caption{Draw a sphere at location (0,0,0) into the scene.}
+\label{Fig1}
+\end{figure}
+
+
+\item Once you have these IDs, print them to the output terminal:\\
+  \verb|printf("ID1 = %d, ID2 = %d\n", *ID1, *ID2);|\\ Recompile and rerun. You should get something like the following when the simulation is running unpaused:
+    \begin{verbatim}
+ID1 = 9, ID2 = 6
+ID1 = 9, ID2 = 7
+ID1 = 9, ID2 = 5
+ID1 = 9, ID2 = 7
+\end{verbatim}
+    If the robot is moving randomly (Fig. \ref{Fig2}), only the four lower legs (with IDs 5,6,7 and 8) will come into contact with the ground plane.
+
+\item Now, in \verb|RagdollDemo.h|, create a new integer array that will store the values of the four touch sensors:\\
+    \texttt{int touches[10];} \\
+    \texttt{touches[i]} will be set to 1 when the touch sensor in the $i$th body part is firing, and zero otherwise. Only \texttt{touches[5]} through \texttt{touches[8]} will be used.
+
+%\newpage
+
+\item Calls to \verb|myContactProcessedCallback| are made when \verb|stepSimulation| is called.  So, we need to set all of the touch sensors to zero before calling \texttt{stepSimulation}, and then set all of the touch sensors that are firing to one during the \texttt{myContactProcessedCallback} calls. So before calling \texttt{stepSimulation}, add a \texttt{for} loop that sets each element of \texttt{touches} to zero.
+
+\item In \texttt{myContactProcessedCallback}, after the print statement you can turn on the corresponding touch sensors as follows:
+\begin{verbatim}
+  printf("ID1 = %d, ID2 = %d\n", *ID1, *ID2);
+  touches[*ID1] = 1;
+  touches[*ID2] = 1;
+\end{verbatim}
+Unfortunately, the above code won't work because \verb|touches| is a member of the \verb|RagdollDemo| instance, and the function \verb|myContactProcessedCallback| does not know about it.  So we will fix it by doing the following things:
+\begin{enumerate}
+  \item Above the definition of \verb|myContactProcessedCallback| in \verb|RagdollDemo.cpp| declare a new variable:
+    \begin{verbatim}
+static RagdollDemo* ragdollDemo;
+    \end{verbatim}
+  \item Add a line of code to the \verb|initPhysics| method:
+\begin{verbatim}
+void RagdollDemo::initPhysics()
+{
+  ragdollDemo = this;
+  ...
+\end{verbatim}
+  \item Adjust the code in \verb|myContactProcessedCallback| like so:
+\begin{verbatim}
+  printf("*ID1 = %d, *ID2 = %d\n", *ID1, *ID2);
+  ragdollDemo->touches[*ID1] = 1;
+  ragdollDemo->touches[*ID2] = 1;
+\end{verbatim}
+\item In \verb|RagdollDemo.h| add the line \verb|public:| before the declaration of \verb|touches|. This will allow the function \verb|myContactProcessedCallback| to see the \verb|touches| member variable.
+\end{enumerate}
+Recompile and rerun.  Your touch sensors might be working, but you can't see them yet.
 
 \item Somewhere within the \\
     \texttt{if ( !pause ) \{}\\
-    clause of \texttt{simLoop} create a \texttt{for} loop that prints out the values of \texttt{touches}. When the simulation is run it should produce something like: \\
+    clause of the method \texttt{clientMoveAndDisplay} create a \texttt{for} loop that prints out the values of \texttt{touches}. When the simulation is run it should produce something like: \\
     \texttt{00001101}\\
     \texttt{00000101}\\
     \texttt{...}\\
     \texttt{00001000}\\
-    (You can see this in Fig. \ref{Fig1}).
+    (You can see this in Fig. \ref{Fig2}).
 
-\item Now, within \texttt{DrawCylinder(i)}, you can include an \texttt{if} clause that will draw the $i$th cylinder black\\
-    \texttt{dsSetColor (0,0,0);}\\
-    if the $i$th element of \texttt{touches} is one, and draw it white\\
-    \texttt{dsSetColor (1,1,1);}\\
-    otherwise. When you compile and run the simulation, you should see that whenever a lower leg comes in contact with the ground it turns black, and turns white when it is lifted above the ground. Capture three images showing different legs doing this as in Fig. \ref{Fig1}, copy them into your document and submit to the T.A.
+\item Now we want to see these contact points visually.  One way to do this is to use the Bullet demo's built-in key commands: hit 'c' and 'w' and the black lines show the contact normals.  However, we can do better than that.  
+
+\item We want to add something more to the rendering.  The Bullet Demos have a \verb|renderme| method that we will use.  Add this method declaration to the \verb|RagdollDemo.h| class:
+\begin{verbatim}
+    virtual void renderme() {
+      extern GLDebugDrawer gDebugDrawer;
+      GlutDemoApplication::renderme(); /* Call the parent method. */
+      /* Make a circle with a 0.9 radius at (0,0,0) with RGB color (1,0,0). */
+      gDebugDrawer.drawSphere(btVector3(0.,0.,0.), 0.9, btVector3(1., 0., 0.));
+    }
+\end{verbatim}
+You should see something like Fig. \ref{Fig1}.  Capture an image of this and copy it into your document.
+
+\item What we want is to put little red spheres at each of our contact points.  First we need to capture the information about where those points are.  Add a new member to the \verb|RagdollDemo| class:
+\begin{verbatim}
+    int  touches[10];
+    btVector3 touchPoints[10];
+\end{verbatim}
+
+\item Capture the points in \verb|myContactProcessedCallback| like so:
+\begin{verbatim}
+    ragdollDemo->touches[*ID1] = 1;
+    ragdollDemo->touches[*ID2] = 1;
+    ragdollDemo->touchPoints[*ID1] = cp.m_positionWorldOnB;
+    ragdollDemo->touchPoints[*ID2] = cp.m_positionWorldOnB;
+\end{verbatim}
+
+\item Now, inside the \texttt{renderme} method, you can include an \texttt{if} clause that will draw a red sphere with a radius of 0.2 at the $i$th touch point if it is being touched. When you compile and run the simulation, you should see that whenever a lower leg comes in contact with the ground, a red sphere appears, and disappears when it is lifted above the ground. Capture three images showing different legs doing this as in Fig. \ref{Fig2}, copy them into your document and submit to the T.A.
 
 \end{enumerate}
 
