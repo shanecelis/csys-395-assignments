@@ -1,9 +1,11 @@
 \documentclass[12pt]{article}
-%\documentclass{article}
 
 \usepackage{times}
 \usepackage[final]{graphicx}
 \usepackage{hyperref}
+\usepackage{verbatim}
+\usepackage{enumerate}
+\usepackage{color}
 
 \setlength{\topmargin}{-0.5in}
 \setlength{\oddsidemargin}{0in}
@@ -17,8 +19,8 @@
 
 \vspace{0.5cm}
 
-\centerline{\bf \large Programming Assignment 9 of 10}
-
+\centerline{\bf \large Programming Assignment 9b of 10}
+\vspace{0.25cm} \centerline{\color{red}DRAFT: Port from Bullet to Bullet by Shane Celis \color{black}}
 \vspace{0.5cm}
 
 \centerline{\large Assigned: Friday, October 28, 2011}
@@ -28,6 +30,7 @@
 \centerline{\large Due: Friday, November 4, 2011 by midnight}
 
 \vspace{0.5cm}
+\noindent \color{red}CHANGES:  I removed a step that was ODE specific regarding the collision detection.  Step 10 includes instructions for setting parameters for both position control and velocity control.  \color{black}
 
 \noindent \textbf{Description:} In assignment 7 you added eight motors to your robot. In assignment 8, you added four sensors. In this assignment, you will add a randomly-weighted synapse connecting each sensor to each motor. This will cause the robot to exhibit non-random behavior, even though it has a random neural network: each time a foot comes in contact with the ground, the motors will respond in the same way. When you capture five images of the robot using a neural network, your images should show that the robot is no longer moving randomly: as can be seen in Fig. \ref{Fig1}, the robot maintains more or less a similar pose as it moves about.
 
@@ -47,14 +50,14 @@ e\includegraphics[height=4cm]{Fig1e}}
 
 \item Back up Assignment\_8 on a flash drive or another computer so that you can always return to your completed eighth assignment.
 
-\item Copy directory Assignment\_8, which contains your submitted document and the entire ODE folder. Rename the new directory Assignment\_9.
+\item Copy directory Assignment\_8, which contains your submitted document and the entire Bullet folder. Rename the new directory Assignment\_9.
 
-\item Create a global variable that is a two dimensional array at the top of your code:\\
+\item Create a member variable in \verb|RagdollDemo.h| that is a two dimensional array after the \verb|touches| member:\\
     \texttt{double weights[4][8];}
 
-\item At the beginning of your \texttt{main} function, set each value in the array to a random value in the range $[-1,1]$. You will need to use \texttt{rand()} as you did previously. Now, element \texttt{weights[i][j]} encodes the weight of the synapse connecting touch sensor $i$ to motor $j$.
+\item At the beginning of the \texttt{initPhysics} method, set each value in the array to a random value in the range $[-1,1]$. You will need to use \texttt{rand()} as you did previously. Now, element \texttt{weights[i][j]} encodes the weight of the synapse connecting touch sensor $i$ to motor $j$.
 
-\item In \texttt{simLoop}, just before you call \texttt{ActuateJoint(i,motorCommand)} (which sends desired angle \texttt{motorCommand} to motor $i$), you need to set \texttt{motorCommand} based on the values of the sensors, instead of setting it randomly. This is done by creating a \texttt{for} loop that iterates over each of the four sensors before calling \texttt{ActuateJoint()}.
+\item In \texttt{clientMoveAndDisplay}, just before you call \texttt{ActuateJoint(i,motorCommand, ...)} (which sends desired angle \texttt{motorCommand} to motor $i$), you need to set \texttt{motorCommand} based on the values of the sensors, instead of setting it randomly. This is done by creating a \texttt{for} loop that iterates over each of the four sensors before calling \texttt{ActuateJoint()}.
 
 \item During each pass through the loop, the value of that touch sensor is multiplied by the weight of the corresponding synapse, and added to \texttt{motorCommand}.
 
@@ -66,19 +69,27 @@ e\includegraphics[height=4cm]{Fig1e}}
 
 \item Finally, send \texttt{motorCommand} to \texttt{ActuateJoint(...)}.
 
-\item Before running your code, move the lines that call dSpaceCollide, dWorldStep and dJointGroupEmpty in simLoop into the following sequence: \\ \\
-    \texttt{dSpaceCollide (space,0,\&nearCallback);} \\
-    \texttt{...code that sets the desired angles for all eight motors...} \\
-    \texttt{dWorldStep (world,0.005);} \\
-    \texttt{dJointGroupEmpty(contactgroup);} \\ \\
-    Last week I mistakenly explained that calls to \texttt{simLoop} alternate with calls to \texttt{nearCallback}. In fact the \texttt{dSpaceCollide} triggers zero, one or more calls to \texttt{nearCallback} from within \texttt{simLoop}, depending on the proximity of pairs of objects.
+\item Compile, run and debug your simulation. If you find that your robot moves and then comes to a stop, you may try increasing the speed and force of the motors. Alternatively, you may have to decrease the simulation step size. I found that a max motor force of $40\, N$ worked well for the position control in \verb|ActuateJoint|:
 
-\item Compile, run and debug your simulation. If you find that your robot moves and then comes to a stop, you may try increasing the speed and force of the motors. Alternatively, you may have to decrease the simulation step size. I found that a motor force of $10$ and a speed of $1$, with a step size of 0.05 worked well on my machine: \\
+\begin{verbatim}
+    void ActuateJoint(int jointIndex, double desiredAngle, double dt) {
+      ...
+      double maxForce = 40.;
+      joints[jointIndex]->enableMotor(true);
+      ...
+    }
+\end{verbatim}
 
-    \texttt{double force = 10.0;}\\
-    \texttt{double speed = 1.0;}\\
-    \texttt{dJointSetHingeParam(joints[jointIndex],dParamFMax,force);}\\
-    \texttt{dJointSetHingeParam(joints[jointIndex],dParamVel,speed*error);}\\
+For the velocity control in \verb|ActuateJoint2|, a proportionality constant $k$ of $100\, m/(s^o) $ worked well on my machine: 
+
+\begin{verbatim}
+    void ActuateJoint2(int jointIndex, double desiredAngle, double dt) {
+      ...
+      double k = 100.;
+      double maxForce = 40.;
+      joints[jointIndex]->enableAngularMotor(true, -k * diff, maxForce*dt);
+    }
+\end{verbatim}
 
 \item You may also find that the particular synapse weights do not produce motion for different settings of the motor speed, force and simulation time step. You can get your code to produce a different sequence of random numbers by setting the random seed at the very beginning of your code using \texttt{srand(int s)}. So, \texttt{srand(0)} will always produce the same sequence of random numbers every time you run your code, but changing to \texttt{srand(1)} will cause a different sequence of random numbers. Try running your code with different initial random seeds, and you should get different motion patterns, one of which will cause the robot to self-displace as in Fig. \ref{Fig1}.
 
